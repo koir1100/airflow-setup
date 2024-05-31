@@ -1,39 +1,82 @@
 from airflow import DAG
-from airflow.providers.amazon.aws.transfers.s3_to_redshift import S3ToRedshiftOperator
+from airflow.decorators import task
+from airflow.providers.postgres.hooks.postgres import PostgresHook
 
-from datetime import datetime
+from datetime import date, datetime
 from datetime import timedelta
 
-dag = DAG(
-    dag_id = 'S3_to_Redshift',
-    start_date = datetime(2024,4,30), # 날짜가 미래인 경우 실행이 안됨
-    schedule = '0 9 * * *',  # 적당히 조절
-    max_active_runs = 1,
-    catchup = False,
-    default_args = {
-        'retries': 1,
-        'retry_delay': timedelta(minutes=3),
-    }
-)
+import json
+import requests
+import logging
 
-schema = "yonggu_choi_14"
-table = "nation_info"
-s3_bucket = "yonggu-practice-bucket"
-s3_key = "nation-info"       # s3_key = schema + "/" + table
+def get_Redshift_connection(autocommit=True):
+    hook = PostgresHook(postgres_conn_id='redshift_dev_db')
+    conn = hook.get_conn()
+    conn.autocommit = autocommit
+    return conn.cursor()
 
-s3_to_redshift_nps = S3ToRedshiftOperator(
-    task_id = 's3_to_redshift_nation_info',
-    s3_bucket = s3_bucket,
-    s3_key = s3_key,
-    schema = schema,
-    table = table,
-    column_list = ["country", "area", "population"],
-    copy_options=["csv", "IGNOREHEADER AS 1", "QUOTE AS '\"'", "DELIMITER ','"],
-    redshift_conn_id = "redshift_dev_db",
-    aws_conn_id = "aws_conn_id_choi",
-    method = "UPSERT",
-    upsert_keys = ["country"],
-    dag = dag
-)
+@task
+def extract(url):
+    logging.info(datetime.now(datetime.UTC))
+    full_info = requests.get(url)
+    return full_info.text
 
-s3_to_redshift_nps
+@task
+def transform(text):
+    dict_info = json.loads(text)
+    new_data = []
+    for idx, info in enumerate(dict_info):
+        new_data.append([idx, info["name"]["official"], info["population"], info["area"]])
+    
+    # new_data.sort(key=lambda x: x[0])
+    # print(*new_data, sep='\n')
+    logging.info("Transform ended")
+    return new_data
+
+@task
+def load(schema, table_info, records):
+    logging.info("load started")
+    cur = get_Redshift_connection()
+
+    try:
+        cur.execute("BEGIN;")
+        cur.execute(f"""
+CREATE TABLE IF NOT EXIST {schema}.{table_info[0]} (
+    {table_info[1]}
+);""")
+        cur.execute(f"DELETE FROM {schema}.{table_info[0]};")
+        for record in records:
+            sql = f"INSERT INTO {schema}.{table_info[0]} VALUES ('{record[0]}', '{record[table_info[2]]}');"
+            print(sql)
+            cur.execute(sql)
+        cur.execute("COMMIT;")
+    except (Exception, psycopg2.DatabaseError) as error:
+        print(error)
+        cur.execute("ROLLBACK")
+        raise
+    logging.info("load done")
+
+    with DAG(
+        dag_id='WorldNationInfo',
+        start_date=datetime(2024,5,25),
+        schedule='30 6 * * 6',
+        max_active_runs=1,
+        catchup=False,
+        default_args={
+            'retries': 1,
+            'retry_delay': timedelta(minutes=3),
+        }
+    ) as dag:
+        
+        url = "https://restcountries.com/v3.1/all?fields=name,population,area"
+        schema = 'yonggu_choi_14'
+        table_info = [
+            ["country", "id int, country_name text", 1], 
+            ["population", "id int, population int", 2], 
+            ["area", "id int, area float", 3],
+        ]
+
+        lines = transform(extract(url))
+        for info in table_info:
+            load(schema, info, lines)
+
