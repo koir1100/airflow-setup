@@ -71,8 +71,8 @@ full_update_query = """CREATE OR REPLACE TABLE dev.public.nation_info AS
         t.VALUE:area::float AS area,
         t.VALUE:population::int AS population
     FROM
-      (SELECT SRC FROM dev.public.raw_source) AS s,
-      TABLE(flatten(s.SRC, recursive => true)) t
+        (SELECT SRC FROM dev.public.raw_source) AS s,
+        TABLE(flatten(s.SRC, recursive => true)) t
     WHERE COUNTRY IS NOT NULL
 );"""
 
