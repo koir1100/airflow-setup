@@ -4,9 +4,6 @@ from airflow.providers.snowflake.transfers.copy_into_snowflake import CopyFromEx
 from airflow.providers.amazon.aws.transfers.sql_to_s3 import SqlToS3Operator
 from airflow.providers.amazon.aws.transfers.s3_to_redshift import S3ToRedshiftOperator
 from airflow.providers.amazon.aws.operators.s3 import S3DeleteObjectsOperator
-from airflow.contrib.operators.snowflake_operator import SnowflakeOperator
-
-from airflow.models import Variable
 
 from datetime import datetime
 from datetime import timedelta
