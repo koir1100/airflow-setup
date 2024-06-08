@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <title>&#xac1c;&#xbc1c;&#xd658;&#xacbd; &#xad6c;&#xcd95;&#xc744; &#xc704;&#xd55c; Docker&#xc640; K8s &#xc2e4;&#xc2b5;</title>
+            <style>
+/* From extension vscode.github */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+.vscode-dark img[src$=\#gh-light-mode-only],
+.vscode-light img[src$=\#gh-dark-mode-only],
+.vscode-high-contrast:not(.vscode-high-contrast-light) img[src$=\#gh-light-mode-only],
+.vscode-high-contrast-light img[src$=\#gh-dark-mode-only] {
+	display: none;
+}
+
+</style>
+            
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/markdown.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/highlight.css">
+<style>
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe WPC', 'Segoe UI', system-ui, 'Ubuntu', 'Droid Sans', sans-serif;
+                font-size: 14px;
+                line-height: 1.6;
+            }
+        </style>
+        <style>
+.task-list-item {
+    list-style-type: none;
+}
+
+.task-list-item-checkbox {
+    margin-left: -20px;
+    vertical-align: middle;
+    pointer-events: none;
+}
+</style>
+<style>
+:root {
+  --color-note: #0969da;
+  --color-tip: #1a7f37;
+  --color-warning: #9a6700;
+  --color-severe: #bc4c00;
+  --color-caution: #d1242f;
+  --color-important: #8250df;
+}
+
+</style>
+<style>
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-note: #2f81f7;
+    --color-tip: #3fb950;
+    --color-warning: #d29922;
+    --color-severe: #db6d28;
+    --color-caution: #f85149;
+    --color-important: #a371f7;
+  }
+}
+
+</style>
+<style>
+.markdown-alert {
+  padding: 0.5rem 1rem;
+  margin-bottom: 16px;
+  color: inherit;
+  border-left: .25em solid #888;
+}
+
+.markdown-alert>:first-child {
+  margin-top: 0
+}
+
+.markdown-alert>:last-child {
+  margin-bottom: 0
+}
+
+.markdown-alert .markdown-alert-title {
+  display: flex;
+  font-weight: 500;
+  align-items: center;
+  line-height: 1
+}
+
+.markdown-alert .markdown-alert-title .octicon {
+  margin-right: 0.5rem;
+  display: inline-block;
+  overflow: visible !important;
+  vertical-align: text-bottom;
+  fill: currentColor;
+}
+
+.markdown-alert.markdown-alert-note {
+  border-left-color: var(--color-note);
+}
+
+.markdown-alert.markdown-alert-note .markdown-alert-title {
+  color: var(--color-note);
+}
+
+.markdown-alert.markdown-alert-important {
+  border-left-color: var(--color-important);
+}
+
+.markdown-alert.markdown-alert-important .markdown-alert-title {
+  color: var(--color-important);
+}
+
+.markdown-alert.markdown-alert-warning {
+  border-left-color: var(--color-warning);
+}
+
+.markdown-alert.markdown-alert-warning .markdown-alert-title {
+  color: var(--color-warning);
+}
+
+.markdown-alert.markdown-alert-tip {
+  border-left-color: var(--color-tip);
+}
+
+.markdown-alert.markdown-alert-tip .markdown-alert-title {
+  color: var(--color-tip);
+}
+
+.markdown-alert.markdown-alert-caution {
+  border-left-color: var(--color-caution);
+}
+
+.markdown-alert.markdown-alert-caution .markdown-alert-title {
+  color: var(--color-caution);
+}
+
+</style>
+        
+        </head>
+        <body class="vscode-body vscode-light">
+            <h2 id="개발환경-구축을-위한-docker와-k8s-실습">개발환경 구축을 위한 Docker와 K8s 실습</h2>
+<h3 id="개념-요약">개념 요약</h3>
+<ol>
+<li>Docker 란?</li>
+</ol>
+<ul>
+<li>소프트웨어를 일관되게 빌드하고 실행하고 배포하는 환경</li>
+</ul>
+<ol start="2">
+<li>Docker 용어 정리</li>
+</ol>
+<ul>
+<li>Docker Image: 개발된 환경을 그대로 패키징하여 독립적으로 완전하게 만들어진 패키지</li>
+<li>Dockerfile: Docker Image를 구성하는 실행환경, 소프트웨어 자체, 필요 라이브러리, 파일 시스템 스냅샷, 환경 설정 변수, 메타 데이터 및 설치 관련 실행 순서 등이 기술된 파일</li>
+<li>Docker Container: 소프트웨어를 실행하기 위한 독립적이고 분리된 공간으로 Docker Engine 기반 동작하며, 자체 파일 시스템을 갖고 있음</li>
+<li>Docker Hub (<a href="http://hub.docker.com">hub.docker.com</a>): Docker Image의 보관소인 Docker Registry에서 Cloud registry 가운데 가장 유명한 서비스로, Docker Image에 대한 공유 및 검색이 가능함</li>
+<li>Docker Compose: 다수의 Container로 소프트웨어가 구성되는 경우, 관리할 수 있는 툴이며, docker-compose.yml 파일을 통해 환경 설정이 가능함</li>
+</ul>
+<ol start="3">
+<li>Docker 사용시 주의할 점</li>
+</ol>
+<ul>
+<li>설정 가능한 Docker Volume 타입 가운데, host volumes는 개발시, named volumes는 실제 배포시 사용할 때 사용해야 함</li>
+<li>실제 Production 환경에서 사용할 경우, 실행 중인 컨테이너에서 작업하지 않고, CI/CD 프로세스를 통해 새 이미지를 빌드한 다음, 실제 환경에 컨테이너 배포하는 자동화 수행되도록 구성하기
+<ul>
+<li>구체적으로, Docker Image를 통해 버전 관리 수행 및 컨테이너 배포 진행하되, 문제 발생할 경우 문제가 없는 이미지로 롤백할 수 있어야 함</li>
+</ul>
+</li>
+</ul>
+<ol start="4">
+<li>Kubernetes (K8s) 이란?</li>
+</ol>
+<ul>
+<li>Container 기반 서비스 배포, 스케일링 및 관리를 자동화해주는 오픈소스 프레임워크로, 물리 서버와 가상 서버 위에서 모두 동작함</li>
+<li>모든 글로벌 클라우드 업체 지원: EKS(ECS) - AWS, AKS - MS Azure, GKS - Google Cloud</li>
+<li>다수의 Container를 효율적으로 관리하기 위한 도구로, 이미지 배포, 스케일링(탄력적 운영), 네트워크(부하 분산), 인사이트(로깅, 서비스 문제 파악 및 분석) 등 다양한 기능 제공</li>
+</ul>
+
+            
+            
+        </body>
+        </html>
